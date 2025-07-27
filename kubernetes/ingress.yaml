@@ -4,27 +4,27 @@ metadata:
   name: intern-ingress
   namespace: internship
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"   # disable forced https redirect
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-  - host: intern.company
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: intern-service
-            port:
-              number: 80
-  - host: admin.intern.company
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: admin-service
-            port:
-              number: 80
+    - host: intern.company
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: intern-service
+                port:
+                  number: 80
+    - host: admin.intern.company
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-service
+                port:
+                  number: 80
