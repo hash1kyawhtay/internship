@@ -18,6 +18,14 @@ spec:
         image: hashonekyaw/internshipf:latest
         ports:
         - containerPort: 80
+        volumeMounts:
+        - mountPath: /var/www/html/uploads
+          name: images-storage
+      volumes:
+      - name: images-storage
+        persistentVolumeClaim:
+          claimName: images-pvc
+
 
 ---
 apiVersion: v1

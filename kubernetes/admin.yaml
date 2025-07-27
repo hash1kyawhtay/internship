@@ -18,6 +18,13 @@ spec:
         image: hashonekyaw/internshipa:latest
         ports:
         - containerPort: 80
+        volumeMounts:
+          - mountPath: /var/www/html/uploads
+            name: images-storage
+      volumes:
+      - name: images-storage
+        persistentVolumeClaim:
+          claimName: images-pvc
 
 ---
 apiVersion: v1
@@ -32,4 +39,3 @@ spec:
     - port: 80
       targetPort: 80
   type: ClusterIP
-

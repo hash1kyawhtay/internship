@@ -8,7 +8,8 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql && docker-php-ext-enable mysqli
 COPY . /var/www/html/
 
 # Set proper permissions (optional)
-RUN chown -R www-data:www-data /var/www/html
+RUN mkdir -p /var/www/html/uploads \
+    && chown -R www-data:www-data /var/www/html/uploads
 
 # Expose port 80
 EXPOSE 80

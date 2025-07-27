@@ -23,24 +23,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = $_POST['description'];
     $website = $_POST['website'];
     
-    // Handle logo upload
-    $logoPath = "";
-    if (!empty($_FILES['logo']['name'])) {
-        $targetDir = "../assets/logos/";
-        if(!is_dir($targetDir)) mkdir($targetDir,0777,true);
-        $logoPath = "assets/logos/" . basename($_FILES["logo"]["name"]);
-        move_uploaded_file($_FILES["logo"]["tmp_name"], "../" . $logoPath);
-    }
+    // Handle file upload
+    if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
 
-    $stmt = $conn->prepare("INSERT INTO companies (name, logo, location, description, website) VALUES (?,?,?,?,?)");
-    $stmt->bind_param("sssss", $name, $logoPath, $location, $description, $website);
+        $fileTmpPath = $_FILES['logo']['tmp_name'];
+        $fileName = basename($_FILES['logo']['name']);
+        $targetFilePath = $uploadDir . uniqid() . "_" . $fileName;
 
-    if ($stmt->execute()) {
-        $message = "Company added successfully!";
+        if (move_uploaded_file($fileTmpPath, $targetFilePath)) {
+            // Insert into DB with logo path
+            $sql = "INSERT INTO companies (name, location, logo, description, website) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sssss", $name, $location, $targetFilePath, $description, $website);
+            $stmt->execute();
+            $stmt->close();
+
+            header("Location: index.php");
+            exit;
+        } else {
+            echo "Error uploading file.";
+        }
     } else {
-        $message = "Error adding company: " . $conn->error;
+        echo "No file uploaded or upload error.";
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -81,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="file-field input-field">
             <div class="btn">
                 <span>Logo</span>
-                <input type="file" name="logo" accept="image/*">
+                <input type="file" name="logo" accept="image/*" required>
             </div>
             <div class="file-path-wrapper">
                 <input class="file-path validate" type="text">
