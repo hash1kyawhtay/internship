@@ -61,7 +61,7 @@ $result = $conn->query($sql);
             </div>
             <div class="input-field col s2">
                 <button class="btn waves-effect waves-light blue" type="submit">
-                    <i class="material-icons">Search</i>
+                    <i class="material-icons">search</i>
                 </button>
             </div>
         </form>
@@ -85,7 +85,7 @@ $result = $conn->query($sql);
                 <?php echo htmlspecialchars($row['description']); ?>
             </p>
             <p class="short-description">
-                <?php echo substr($row['description'], 0, 70) . '...'; ?>
+                <?php echo substr($row['description'], 0, 50) . '...'; ?>
             </p>
             <a href="javascript:void(0)" class="see-more blue-text">See More</a>
         </div>
