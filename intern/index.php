@@ -2,7 +2,7 @@
 $host = "mysql-service";  // Kubernetes service name for MySQ
 $user = "root";  // default for MAMP
 $pass = "root";  // default for MAMP
-$dbname = "internship_db";
+$dbname = "internship";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 
