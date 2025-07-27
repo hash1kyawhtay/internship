@@ -4,7 +4,7 @@ metadata:
   name: intern-ingress
   namespace: internship
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"   # disable forced https redirect
 spec:
   ingressClassName: nginx
   rules:
@@ -18,7 +18,7 @@ spec:
             name: intern-service
             port:
               number: 80
-  - host: intern.company.admin
+  - host: admin.intern.company
     http:
       paths:
       - path: /
