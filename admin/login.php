@@ -1,16 +1,7 @@
 <?php
 session_start();
 
-$host = "mysql-service";  // Kubernetes service name for MySQL
-$user = "root";  // default for MAMP
-$pass = "root";  // default for MAMP
-$dbname = "internship_db";
 
-$conn = new mysqli($host, $user, $pass, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 $error = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
