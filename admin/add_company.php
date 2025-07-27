@@ -5,13 +5,12 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
-$host = "mysql-service";  // Kubernetes service name for MySQL
-$user = "root";  // default for MAMP
-$pass = "root";  // default for MAMP
+$host = "mysql-service";  // Kubernetes MySQL service
+$user = "root";  
+$pass = "root";  
 $dbname = "internship";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -22,36 +21,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $location = $_POST['location'];
     $description = $_POST['description'];
     $website = $_POST['website'];
-    
-    // Handle file upload
+
+    $uploadDir = __DIR__ . '/uploads/';   // absolute path
+    $dbPathDir = 'uploads/';              // relative path for DB
+
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
-        $uploadDir = 'uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (in_array($_FILES['logo']['type'], $allowedTypes)) {
+            $fileName = uniqid() . "_" . basename($_FILES['logo']['name']);
+            $targetFilePath = $uploadDir . $fileName;
 
-        $fileTmpPath = $_FILES['logo']['tmp_name'];
-        $fileName = basename($_FILES['logo']['name']);
-        $targetFilePath = $uploadDir . uniqid() . "_" . $fileName;
+            if (move_uploaded_file($_FILES['logo']['tmp_name'], $targetFilePath)) {
+                $dbFilePath = $dbPathDir . $fileName;
 
-        if (move_uploaded_file($fileTmpPath, $targetFilePath)) {
-            // Insert into DB with logo path
-            $sql = "INSERT INTO companies (name, location, logo, description, website) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssss", $name, $location, $targetFilePath, $description, $website);
-            $stmt->execute();
-            $stmt->close();
+                $sql = "INSERT INTO companies (name, location, logo, description, website) VALUES (?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssss", $name, $location, $dbFilePath, $description, $website);
+                $stmt->execute();
+                $stmt->close();
 
-            header("Location: index.php");
-            exit;
+                header("Location: index.php");
+                exit;
+            } else {
+                $message = "Error moving uploaded file.";
+            }
         } else {
-            echo "Error uploading file.";
+            $message = "Invalid file type. Only JPG, PNG, GIF, WEBP allowed.";
         }
     } else {
-        echo "No file uploaded or upload error.";
+        $message = "No file uploaded or upload error.";
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -71,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </nav>
 
 <div class="container" style="margin-top:30px;">
-    <?php if($message) echo "<p class='green-text'>$message</p>"; ?>
+    <?php if($message) echo "<p class='red-text'>$message</p>"; ?>
     <form method="POST" enctype="multipart/form-data">
         <div class="input-field">
             <input type="text" name="name" required>

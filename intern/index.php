@@ -76,7 +76,7 @@ $result = $conn->query($sql);
             <div class="col s12 m6 l4">
                 <div class="card company-card">
                     <div class="card-image">
-                        <<img src="<?php echo htmlspecialchars($row['logo']); ?>" alt="Company Logo">
+                        <img src="<?php echo htmlspecialchars($row['logo']); ?>" alt="Company Logo">
                     </div>
                     <div class="card-content">
                         <span class="card-title"><?php echo $row['name']; ?></span>
