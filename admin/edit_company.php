@@ -5,13 +5,12 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
-$host = "mysql-service";  // Kubernetes service name for MySQL
-$user = "root";  // default for MAMP
-$pass = "root";  // default for MAMP
+$host = "mysql-service";
+$user = "root";
+$pass = "root";
 $dbname = "internship";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -19,25 +18,43 @@ if ($conn->connect_error) {
 $id = intval($_GET['id']);
 $message = "";
 
-// Get existing data
-$result = $conn->query("SELECT * FROM companies WHERE id=$id");
+// Get existing company data
+$result = $conn->query("SELECT * FROM companies WHERE id = $id");
 if ($result->num_rows == 0) {
     die("Company not found");
 }
 $company = $result->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $location = $_POST['location'];
+    $name        = $_POST['name'];
+    $location    = $_POST['location'];
     $description = $_POST['description'];
-    $website = $_POST['website'];
+    $website     = $_POST['website'];
 
-    $logoPath = $company['logo'];
+    $logoPath = $company['logo']; // keep old logo
+
+    // Check if new logo uploaded
     if (!empty($_FILES['logo']['name'])) {
-        $targetDir = "../assets/logos/";
-        if(!is_dir($targetDir)) mkdir($targetDir,0777,true);
-        $logoPath = "assets/logos/" . basename($_FILES["logo"]["name"]);
-        move_uploaded_file($_FILES["logo"]["tmp_name"], "../" . $logoPath);
+        $uploadDir = __DIR__ . '/uploads/';
+        $dbPathDir = 'uploads/';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (in_array($_FILES['logo']['type'], $allowedTypes)) {
+            $fileName = uniqid() . "_" . basename($_FILES["logo"]["name"]);
+            $targetFilePath = $uploadDir . $fileName;
+
+            if (move_uploaded_file($_FILES["logo"]["tmp_name"], $targetFilePath)) {
+                $logoPath = $dbPathDir . $fileName;
+            } else {
+                $message = "Error uploading new logo. Keeping old one.";
+            }
+        } else {
+            $message = "Invalid image type. Keeping old logo.";
+        }
     }
 
     $stmt = $conn->prepare("UPDATE companies SET name=?, logo=?, location=?, description=?, website=? WHERE id=?");
@@ -45,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($stmt->execute()) {
         $message = "Company updated successfully!";
-        $company = ['name'=>$name,'logo'=>$logoPath,'location'=>$location,'description'=>$description,'website'=>$website];
+        $company = ['name' => $name, 'logo' => $logoPath, 'location' => $location, 'description' => $description, 'website' => $website];
     } else {
         $message = "Error updating company: " . $conn->error;
     }
@@ -72,24 +89,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php if($message) echo "<p class='green-text'>$message</p>"; ?>
     <form method="POST" enctype="multipart/form-data">
         <div class="input-field">
-            <input type="text" name="name" value="<?php echo $company['name']; ?>" required>
+            <input type="text" name="name" value="<?php echo htmlspecialchars($company['name']); ?>" required>
             <label class="active">Company Name</label>
         </div>
         <div class="input-field">
-            <input type="text" name="location" value="<?php echo $company['location']; ?>" required>
+            <input type="text" name="location" value="<?php echo htmlspecialchars($company['location']); ?>" required>
             <label class="active">Location</label>
         </div>
         <div class="input-field">
-            <textarea name="description" class="materialize-textarea" required><?php echo $company['description']; ?></textarea>
+            <textarea name="description" class="materialize-textarea" required><?php echo htmlspecialchars($company['description']); ?></textarea>
             <label class="active">Description</label>
         </div>
         <div class="input-field">
-            <input type="url" name="website" value="<?php echo $company['website']; ?>" required>
+            <input type="url" name="website" value="<?php echo htmlspecialchars($company['website']); ?>" required>
             <label class="active">Website</label>
         </div>
+        <p>Current Logo:</p>
+        <img src="<?php echo $company['logo']; ?>" alt="Logo" style="width:100px;height:auto;margin-bottom:10px;">
         <div class="file-field input-field">
             <div class="btn">
-                <span>Logo</span>
+                <span>New Logo</span>
                 <input type="file" name="logo" accept="image/*">
             </div>
             <div class="file-path-wrapper">

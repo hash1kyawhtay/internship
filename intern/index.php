@@ -47,7 +47,7 @@ $result = $conn->query($sql);
 
 <nav class="blue">
     <div class="nav-wrapper">
-        <a href="#" class="brand-logo center">Internship Companies</a>
+        <a href="#" class="brand-logo center">Internship Companies for UCST</a>
     </div>
 </nav>
 
@@ -61,7 +61,7 @@ $result = $conn->query($sql);
             </div>
             <div class="input-field col s2">
                 <button class="btn waves-effect waves-light blue" type="submit">
-                    <i class="material-icons">search</i>
+                    <i class="material-icons">Search</i>
                 </button>
             </div>
         </form>
@@ -74,20 +74,27 @@ $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) {
         ?>
             <div class="col s12 m6 l4">
-                <div class="card company-card">
-                    <div class="card-image">
-                        <img src="<?php echo htmlspecialchars($row['logo']); ?>" alt="Company Logo">
-                    </div>
-                    <div class="card-content">
-                        <span class="card-title"><?php echo $row['name']; ?></span>
-                        <p><i class="material-icons tiny">place</i> <?php echo $row['location']; ?></p>
-                        <p><?php echo substr($row['description'], 0, 80) . '...'; ?></p>
-                    </div>
-                    <div class="card-action">
-                        <a href="<?php echo $row['website']; ?>" target="_blank">Visit Website</a>
-                    </div>
-                </div>
-            </div>
+    <div class="card company-card">
+        <div class="card-image">
+            <img src="<?php echo htmlspecialchars($row['logo']); ?>" alt="Company Logo">
+        </div>
+        <div class="card-content">
+            <span class="card-title"><?php echo $row['name']; ?></span>
+            <p><i class="material-icons tiny">place</i> <?php echo $row['location']; ?></p>
+            <p class="description" style="display: none;">
+                <?php echo htmlspecialchars($row['description']); ?>
+            </p>
+            <p class="short-description">
+                <?php echo substr($row['description'], 0, 70) . '...'; ?>
+            </p>
+            <a href="javascript:void(0)" class="see-more blue-text">See More</a>
+        </div>
+        <div class="card-action">
+            <a href="<?php echo $row['website']; ?>" target="_blank">Visit Website</a>
+        </div>
+    </div>
+</div>
+
         <?php
             }
         } else {
@@ -99,5 +106,27 @@ $result = $conn->query($sql);
 
 <!-- Materialize JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.see-more').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const card = this.closest('.card-content');
+            const shortDesc = card.querySelector('.short-description');
+            const fullDesc = card.querySelector('.description');
+
+            if (fullDesc.style.display === 'none') {
+                fullDesc.style.display = 'block';
+                shortDesc.style.display = 'none';
+                this.textContent = 'See Less';
+            } else {
+                fullDesc.style.display = 'none';
+                shortDesc.style.display = 'block';
+                this.textContent = 'See More';
+            }
+        });
+    });
+});
+</script>
+
 </body>
 </html>
