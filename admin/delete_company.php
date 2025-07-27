@@ -5,7 +5,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
-$host = "localhost";
+$host = "mysql-service";  // Kubernetes service name for MySQL
 $user = "root";  // default for MAMP
 $pass = "root";  // default for MAMP
 $dbname = "internship_db";
